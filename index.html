@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网文标题生成器</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: oklch(0.97 0.006 70);
+            --bg-elevated: oklch(0.99 0.004 70);
+            --bg-card: #ffffff;
+            --fg: oklch(0.18 0.02 250);
+            --fg-muted: oklch(0.42 0.015 250);
+            --fg-dim: oklch(0.58 0.012 250);
+            --accent: oklch(0.35 0.12 250);
+            --accent-soft: oklch(0.50 0.10 250);
+            --accent-light: oklch(0.92 0.03 250);
+            --accent-red: oklch(0.45 0.15 25);
+            --accent-red-soft: oklch(0.85 0.06 25);
+            --success: oklch(0.50 0.12 145);
+            --success-light: oklch(0.92 0.04 145);
+            --border: oklch(0.88 0.008 250);
+            --border-soft: oklch(0.92 0.006 250);
+            --shadow: 0 1px 3px oklch(0.50 0.01 250 / 0.08), 0 4px 12px oklch(0.50 0.01 250 / 0.04);
+            --shadow-hover: 0 2px 6px oklch(0.50 0.01 250 / 0.1), 0 8px 24px oklch(0.50 0.01 250 / 0.06);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--fg);
+            font-family: 'Noto Sans SC', -apple-system, sans-serif;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 580px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 44px;
+        }
+
+        .main-title {
+            font-family: 'Noto Serif SC', serif;
+            font-size: 38px;
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--fg-muted);
+            font-weight: 400;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            margin-bottom: 28px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-soft);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            color: var(--fg-muted);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--fg);
+            background: var(--bg);
+        }
+
+        .tab.active {
+            background: var(--accent);
+            color: white;
+        }
+
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        .input-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .input-label {
+            font-size: 13px;
+            color: var(--fg-muted);
+            margin-bottom: 14px;
+            font-weight: 500;
+        }
+
+        .input-field {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            color: var(--fg);
+            font-size: 15px;
+            font-family: inherit;
+            resize: none;
+            min-height: 90px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .input-field::placeholder { color: var(--fg-dim); }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-soft);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .example-text {
+            font-size: 12px;
+            color: var(--fg-dim);
+            margin-top: 12px;
+        }
+
+        .example-text span {
+            color: var(--accent-soft);
+            cursor: pointer;
+            transition: color 0.15s ease;
+        }
+
+        .example-text span:hover {
+            color: var(--accent);
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-underline-offset: 3px;
+        }
+
+        .notice-box {
+            background: linear-gradient(135deg, var(--accent-light), var(--accent-red-soft));
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 14px;
+            font-size: 12px;
+            color: var(--fg-muted);
+            line-height: 1.7;
+        }
+
+        .notice-box strong {
+            color: var(--accent);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+            width: 100%;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-soft);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--fg-muted);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg);
+            color: var(--fg);
+            border-color: var(--accent-soft);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .generated-titles { margin-top: 0; }
+
+        .generated-title-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 12px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            position: relative;
+            box-shadow: var(--shadow);
+        }
+
+        .generated-title-item:hover {
+            border-color: var(--accent-soft);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .generated-title-item.recommended {
+            border-color: var(--accent-red);
+            background: linear-gradient(135deg, var(--accent-red-soft), var(--bg-card) 40%);
+        }
+
+        .style-tag {
+            display: inline-block;
+            font-size: 11px;
+            color: var(--accent);
+            background: var(--accent-light);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .generated-title-item .title-text {
+            font-size: 15px;
+            color: var(--fg);
+            line-height: 1.8;
+            font-weight: 500;
+            word-break: keep-all;
+            overflow-wrap: anywhere;
+        }
+
+        .generated-title-item .title-text .highlight {
+            color: var(--fg);
+            font-weight: 700;
+        }
+
+        .generated-title-item .actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-soft);
+        }
+
+        .action-icon {
+            font-size: 13px;
+            color: var(--fg-dim);
+            cursor: pointer;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .action-icon:hover {
+            background: var(--bg);
+            color: var(--fg);
+        }
+
+        .action-icon.like { color: var(--success); }
+        .action-icon.like:hover { background: var(--success-light); }
+
+        .action-icon.dislike { color: var(--accent-red); }
+        .action-icon.dislike:hover { background: var(--accent-red-soft); }
+
+        .recommended-badge {
+            position: absolute;
+            top: -10px;
+            right: 16px;
+            background: var(--accent-red);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 6px;
+        }
+
+        .feedback-section {
+            margin-top: 24px;
+            padding: 20px;
+            background: var(--bg-card);
+            border: 1px dashed var(--border);
+            border-radius: 12px;
+        }
+
+        .feedback-title {
+            font-size: 13px;
+            color: var(--fg-muted);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .feedback-input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 14px;
+            color: var(--fg);
+            font-size: 14px;
+            font-family: inherit;
+            margin-bottom: 10px;
+        }
+
+        .feedback-input:focus {
+            outline: none;
+            border-color: var(--accent-soft);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        .feedback-hint {
+            font-size: 12px;
+            color: var(--fg-dim);
+            margin-bottom: 12px;
+        }
+
+        .feedback-btn {
+            padding: 10px 20px;
+            background: var(--accent-soft);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.15s ease;
+        }
+
+        .feedback-btn:hover {
+            background: var(--accent);
+        }
+
+        .feedback-success {
+            font-size: 13px;
+            color: var(--success);
+            margin-top: 12px;
+            display: none;
+        }
+
+        .feedback-success.show { display: block; }
+
+        /* 上传标题区域 */
+        .upload-section {
+            margin-top: 20px;
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 10px;
+            border: 1px dashed var(--border);
+        }
+
+        .upload-title {
+            font-size: 13px;
+            color: var(--fg-muted);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .upload-textarea {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--fg);
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            min-height: 80px;
+        }
+
+        .upload-textarea:focus {
+            outline: none;
+            border-color: var(--accent-soft);
+        }
+
+        .upload-stats {
+            font-size: 11px;
+            color: var(--fg-dim);
+            margin-top: 8px;
+        }
+
+        .upload-stats strong {
+            color: var(--accent);
+        }
+
+        .preference-toggle {
+            margin-top: 16px;
+            padding: 14px 16px;
+            background: var(--bg);
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.15s ease;
+        }
+
+        .preference-toggle:hover {
+            background: var(--accent-light);
+        }
+
+        .preference-toggle-text {
+            font-size: 13px;
+            color: var(--fg-muted);
+            font-weight: 500;
+        }
+
+        .preference-toggle-arrow {
+            font-size: 12px;
+            color: var(--fg-dim);
+            transition: transform 0.2s ease;
+        }
+
+        .preference-toggle.expanded .preference-toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        .preference-content {
+            display: none;
+            margin-top: 12px;
+            padding: 16px;
+            background: var(--bg);
+            border-radius: 10px;
+        }
+
+        .preference-content.show {
+            display: block;
+        }
+
+        .preference-stats-title {
+            font-size: 12px;
+            color: var(--fg-muted);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .preference-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .preference-stat { text-align: center; }
+
+        .preference-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .preference-stat-label {
+            font-size: 12px;
+            color: var(--fg-muted);
+            margin-top: 2px;
+        }
+
+        .preference-analysis {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--fg-muted);
+        }
+
+        .preference-analysis-title {
+            font-weight: 600;
+            color: var(--fg);
+            margin-bottom: 6px;
+        }
+
+        .preference-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .preference-tag {
+            padding: 4px 10px;
+            background: var(--accent-light);
+            color: var(--accent);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .learned-section {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--bg-card);
+            border-radius: 8px;
+        }
+
+        .learned-title {
+            font-size: 12px;
+            color: var(--fg-muted);
+            margin-bottom: 10px;
+        }
+
+        .learned-count {
+            font-size: 20px;
+            font-weight: 700;
+            color: oklch(0.65 0.12 85);
+        }
+
+        .learned-list {
+            margin-top: 12px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .learned-item {
+            font-size: 12px;
+            color: var(--fg-muted);
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .learned-item:last-child { border-bottom: none; }
+        .learned-item .original { color: var(--fg-dim); }
+        .learned-item .arrow { color: var(--accent-soft); margin: 0 8px; }
+        .learned-item .transformed { color: var(--fg); }
+
+        .title-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            padding: 48px 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .title-display {
+            font-size: 18px;
+            font-weight: 600;
+            line-height: 2.2;
+            margin-bottom: 32px;
+            min-height: 80px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--fg);
+            transition: color 0.15s ease;
+            padding: 10px 5px;
+        }
+
+        .title-display:hover { color: var(--accent); }
+        .title-display .highlight { color: var(--fg); font-weight: 700; }
+
+        .title-hint {
+            font-size: 12px;
+            color: var(--fg-dim);
+            margin-bottom: 20px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .stats-box {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        .stats-title {
+            font-size: 13px;
+            color: var(--fg-muted);
+            margin-bottom: 18px;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .stat-item {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--fg-dim);
+            margin-bottom: 6px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: oklch(0.65 0.12 85);
+        }
+
+        .stat-value.large { font-size: 22px; color: var(--accent); }
+        .stat-value.poor { font-size: 22px; color: var(--fg-muted); }
+        .stat-value.good { font-size: 22px; color: var(--success); }
+
+        .author-status {
+            margin-top: 14px;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--fg-muted);
+            text-align: center;
+        }
+
+        .luck-rank {
+            margin-top: 18px;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--accent-light), var(--success-light));
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .luck-rank .rank-text {
+            font-size: 14px;
+            color: var(--accent-soft);
+            margin-bottom: 6px;
+        }
+
+        .luck-rank .rank-number {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--accent);
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .luck-rank .rank-desc {
+            font-size: 12px;
+            color: var(--fg-muted);
+            margin-top: 6px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: var(--shadow-hover);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        .toast.show { opacity: 1; }
+
+        .footer {
+            text-align: center;
+            font-size: 12px;
+            color: var(--fg-dim);
+            margin-top: 48px;
+            padding-bottom: 24px;
+            line-height: 1.8;
+        }
+
+        /* 废话星系联动样式 */
+        .galaxy-link-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 14px;
+            margin-bottom: 24px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .galaxy-link-box:hover {
+            border-color: rgba(102, 126, 234, 0.6);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .galaxy-link-icon {
+            font-size: 32px;
+            line-height: 1;
+        }
+
+        .galaxy-link-content {
+            flex: 1;
+        }
+
+        .galaxy-link-title {
+            color: rgba(255, 255, 255, 0.95);
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .galaxy-link-desc {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .galaxy-link-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .galaxy-link-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-soft); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .generated-title-item {
+            animation: fadeIn 0.3s ease backwards;
+        }
+
+        .generated-title-item:nth-child(1) { animation-delay: 0.05s; }
+        .generated-title-item:nth-child(2) { animation-delay: 0.1s; }
+        .generated-title-item:nth-child(3) { animation-delay: 0.15s; }
+        .generated-title-item:nth-child(4) { animation-delay: 0.2s; }
+        .generated-title-item:nth-child(5) { animation-delay: 0.25s; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="main-title">网文标题生成器</h1>
+            <p class="subtitle">用网文语法粉碎你的日常——生成爆款标题</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab active" id="tabDaily">日常粉碎机</button>
+            <button class="tab" id="tabRandom">随机生成</button>
+        </div>
+
+        <!-- 日常转网文面板 -->
+        <div class="panel active" id="panelDaily">
+            <div class="input-box">
+                <div class="input-label">讲讲你今天发生的事，越有故事感越好</div>
+                <textarea class="input-field" id="dailyInput" placeholder="例如：今天上班迟到了被老板撞见，结果老板不仅没骂我还请我喝咖啡&#10;例如：暗恋的人突然给我发消息问我在干嘛&#10;例如：室友半夜打游戏太吵，我骂了他一顿结果他哭了"></textarea>
+                <div class="example-text" id="exampleText">
+                    可以描述得详细一点，有冲突和转折效果更好
+                </div>
+            </div>
+
+            <button class="btn btn-primary" id="btnGenerate">粉碎并生成标题</button>
+
+            <div class="generated-titles" id="generatedTitles"></div>
+
+            <!-- 荒谬声明 + 废话星系联动 -->
+            <div class="notice-box" style="margin-top: 20px;">
+                <strong>荒谬声明：</strong>生成的标题可能语序混乱、逻辑跳跃、甚至完全不合理——但正是这种<strong>「认真的荒谬」</strong>构成了网文标题的独特魅力。我们用网文语法粉碎日常，不合理之处皆为套路。<span style="color: var(--accent);">如果生成的结果让你觉得荒谬得烦躁，或者你原本想倾诉的烦心事无处安放——</span>欢迎把它们投入到<strong>废话星系</strong>，让你的抱怨变成星光。
+            </div>
+
+            <div class="galaxy-link-box">
+                <div class="galaxy-link-icon">🌌</div>
+                <div class="galaxy-link-content">
+                    <div class="galaxy-link-title">前往废话星系</div>
+                    <div class="galaxy-link-desc">你的抱怨，终将成为星光</div>
+                </div>
+                <a href="https://guan1133.github.io/Nonsense-galaxy/" target="_blank" class="galaxy-link-btn">发射 →</a>
+            </div>
+
+            <!-- 反馈学习区 -->
+            <div class="feedback-section">
+                <div class="feedback-title">觉得粉碎得不够好？教教我</div>
+                <input type="text" class="feedback-input" id="feedbackInput" placeholder="输入你觉得更好的标题...">
+                <div class="feedback-hint">我会学习你的风格，下次粉碎得更到位</div>
+                <button class="feedback-btn" id="feedbackBtn">提交学习</button>
+                <div class="feedback-success" id="feedbackSuccess">已学习，下次会更接近你的风格</div>
+
+                <!-- 上传标题区域 -->
+                <div class="upload-section">
+                    <div class="upload-title">上传你写的标题（用于优化系统）</div>
+                    <textarea class="upload-textarea" id="uploadTextarea" placeholder="每行一个标题，例如：&#10;《重生之我在豪门当保姆》&#10;《穿越成恶毒女配后我摆烂了》&#10;《绑定系统后我成了反派白月光》"></textarea>
+                    <button class="btn btn-secondary btn-small" id="uploadBtn" style="margin-top:10px;">上传到库存</button>
+                </div>
+
+                <!-- 偏好面板 - 点击展开 -->
+                <div class="preference-toggle" id="preferenceToggle">
+                    <span class="preference-toggle-text">查看我的偏好与贡献</span>
+                    <span class="preference-toggle-arrow">▼</span>
+                </div>
+                <div class="preference-content" id="preferenceContent">
+                    <div class="preference-stats-title">数据统计</div>
+                    <div class="preference-stats-grid">
+                        <div class="preference-stat">
+                            <div class="preference-stat-value" id="likeCount">0</div>
+                            <div class="preference-stat-label">喜欢</div>
+                        </div>
+                        <div class="preference-stat">
+                            <div class="preference-stat-value" id="dislikeCount">0</div>
+                            <div class="preference-stat-label">不喜欢</div>
+                        </div>
+                        <div class="preference-stat">
+                            <div class="preference-stat-value" id="contributeCount">0</div>
+                            <div class="preference-stat-label">贡献</div>
+                        </div>
+                    </div>
+                    <div class="user-title-box" id="userTitleBox" style="margin-top:12px;padding:12px;background:linear-gradient(135deg,var(--accent-light),var(--success-light));border-radius:8px;text-align:center;">
+                        <div class="user-title-label" style="font-size:11px;color:var(--fg-muted);margin-bottom:4px;">你的头衔</div>
+                        <div class="user-title" id="userTitle" style="font-size:16px;font-weight:700;color:var(--accent);">路人读者</div>
+                        <div class="user-title-progress" id="userTitleProgress" style="font-size:11px;color:var(--fg-dim);margin-top:4px;">再贡献 5 条可解锁「菜鸟作者」</div>
+                    </div>
+                    <div class="preference-analysis" id="preferenceAnalysis">
+                        <div class="preference-analysis-title">AI 分析你的偏好</div>
+                        <div id="analysisText">点赞后会显示你的偏好分析</div>
+                        <div class="preference-tags" id="preferenceTags"></div>
+                    </div>
+                    <div class="learned-section" id="learnedSection" style="display:none;">
+                        <div class="learned-title">已学习 <span class="learned-count" id="learnedCount">0</span> 条</div>
+                        <div class="learned-list" id="learnedList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 随机生成面板 -->
+        <div class="panel" id="panelRandom">
+            <div class="title-box">
+                <div class="title-display" id="titleDisplay">点击下方按钮开始生成</div>
+                <div class="title-hint">点击标题可复制</div>
+                <div class="action-buttons">
+                    <button class="btn btn-primary" id="btnRandomGenerate" style="width:auto;margin-bottom:0;">换一个</button>
+                    <button class="btn btn-secondary" id="btnCopy">复制</button>
+                </div>
+            </div>
+
+            <div class="stats-box">
+                <div class="stats-title">AI预测数据（纯属虚构）</div>
+                <div class="stats-grid">
+                    <div class="stat-item"><div class="stat-label">预计字数</div><div class="stat-value" id="statWords">-</div></div>
+                    <div class="stat-item"><div class="stat-label">预计收入</div><div class="stat-value large" id="statIncome">-</div></div>
+                    <div class="stat-item"><div class="stat-label">催更频率</div><div class="stat-value" id="statUrgency">-</div></div>
+                    <div class="stat-item"><div class="stat-label">改编概率</div><div class="stat-value" id="statAdapt">-</div></div>
+                </div>
+                <div class="author-status" id="authorStatus">-</div>
+                <div class="luck-rank">
+                    <div class="rank-text">恭喜！你的运气超过了</div>
+                    <div class="rank-number" id="luckPercent">-</div>
+                    <div class="rank-desc" id="luckDesc">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">幽默来自事件本身的冲突放大，而不是随机添加无关元素<br>如有雷同，说明网文真的都一个样</div>
+    </div>
+
+    <div class="toast" id="toast">已复制到剪贴板</div>
+
+    <script>
+        // ==================== 状态管理 ====================
+        var currentTitle = '';
+        var learnedPatterns = [];
+        var preferences = { likes: [], dislikes: [] };
+        var userTitles = []; // 用户上传的标题
+        var uploadedCount = 0; // 上传数量
+
+        // ==================== 头衔系统 ====================
+        var titleSystem = [
+            { name: '路人读者', min: 0, max: 4 },
+            { name: '菜鸟作者', min: 5, max: 9 },
+            { name: '新手写手', min: 10, max: 19 },
+            { name: '潜力作者', min: 20, max: 49 },
+            { name: '签约作者', min: 50, max: 99 },
+            { name: '白金大神', min: 100, max: 999999 }
+        ];
+
+        function getUserTitle(contributeCount) {
+            for (var i = titleSystem.length - 1; i >= 0; i--) {
+                if (contributeCount >= titleSystem[i].min) {
+                    return titleSystem[i];
+                }
+            }
+            return titleSystem[0];
+        }
+
+        function getNextTitle(contributeCount) {
+            for (var i = 0; i < titleSystem.length; i++) {
+                if (contributeCount < titleSystem[i].min) {
+                    return titleSystem[i];
+                }
+            }
+            return null;
+        }
+
+        function updateUserTitle() {
+            // 贡献数 = 点赞数 + 上传数 + 学习数
+            var contributeCount = preferences.likes.length + uploadedCount + learnedPatterns.length;
+
+            var currentTitleInfo = getUserTitle(contributeCount);
+            var nextTitleInfo = getNextTitle(contributeCount);
+
+            document.getElementById('userTitle').textContent = currentTitleInfo.name;
+            document.getElementById('contributeCount').textContent = contributeCount;
+
+            if (nextTitleInfo) {
+                var need = nextTitleInfo.min - contributeCount;
+                document.getElementById('userTitleProgress').textContent = '再贡献 ' + need + ' 条可解锁「' + nextTitleInfo.name + '」';
+            } else {
+                document.getElementById('userTitleProgress').textContent = '已达最高头衔！';
+            }
+        }
+
+        // ==================== 核心转换词库 ====================
+
+        var sceneConfig = {
+            workplace: {
+                keywords: ['上班', '公司', '老板', '同事', '加班', '开会', '迟到', '请假', '工资', '领导', '项目', '甲方', '辞职', '升职', '业绩', 'kpi', 'KPI', '打卡', '摸鱼'],
+                characters: ['老板', '上司', '同事', '甲方', '实习生', '领导', '主管', 'HR']
+            },
+            school: {
+                keywords: ['考试', '复习', '老师', '同学', '室友', '作业', '论文', '答辩', '期末', '挂科', '奖学金', '考研', '上课', '逃课', '早八'],
+                characters: ['老师', '同学', '室友', '学长', '学妹', '班主任', '辅导员']
+            },
+            love: {
+                keywords: ['暗恋', '表白', '前任', '分手', '恋爱', '脱单', '告白', '喜欢', '心动', '暧昧', '追', '在一起', '表白被拒', '被表白'],
+                characters: ['暗恋对象', '前任', '竹马', '男神', '女神', 'CP', '情敌']
+            },
+            daily: {
+                keywords: ['外卖', '快递', '买东西', '网购', '排队', '堵车', '下雨', '熬夜', '失眠', '减肥', '健身'],
+                characters: ['外卖小哥', '快递员', '路人', '邻居', '房东']
+            },
+            social: {
+                keywords: ['朋友', '网友', '粉丝', '社交', '聚会', '认识', '遇见', '微信', '聊天', '朋友圈'],
+                characters: ['网友', '朋友', '粉丝', '邻居', '群友']
+            }
+        };
+
+        var extremeSettings = ['末日求生副本', '修仙界', '规则怪谈世界', '星际战场', '豪门争斗', '宫斗现场', '末日废土', '平行宇宙', '系统空间'];
+
+        var baseRandomTitles = [
+            '《竹马成高定调香师那天，我甚至还要去掏大粪》',
+            '《除夕夜侄子往化粪池扔鞭炮炸死儿子后，我重生了》',
+            '《身为公司业绩千万的顶级销冠，年终奖却只有五毛》',
+            '《重生之我在豪门当保姆，系统让我攻略反派》',
+            '《穿越成恶毒女配后，我摆烂了》',
+            '《绑定系统后，我成了反派的白月光》',
+            '《一觉醒来，我成了炮灰女配》',
+            '《被退婚后，我成了男主的心尖宠》',
+            '《重生回到了高考前一天》',
+            '《惊！我直播连到了古代朝堂》',
+            '《谁懂啊？我手机连上了反派的摄像头》',
+            '《离谱！带球跑后他追疯了》',
+            '《杀疯了！团宠竟是我》',
+            '《社畜辞职100天，全城叫她老板》',
+            '《她收养的狗，竟然是退役战神》',
+            '《我穿越只想苟命养老，结果封后了》',
+            '《重生后，我决定只爱自己》'
+        ];
+
+        // 动态标题库（包含基础库 + 用户点赞 + 用户上传）
+        var randomTitles = baseRandomTitles.slice();
+
+        // ==================== 工具函数 ====================
+        function randomPick(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        function shuffle(arr) {
+            var result = arr.slice();
+            for (var i = result.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = result[i];
+                result[i] = result[j];
+                result[j] = temp;
+            }
+            return result;
+        }
+
+        function showToast(msg) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 2000);
+        }
+
+        function getCurrentTime() {
+            var now = new Date();
+            return (now.getMonth()+1) + '/' + now.getDate() + ' ' + now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+        }
+
+        // ==================== 场景识别 ====================
+        function detectScene(input) {
+            var lowerInput = input.toLowerCase();
+            var maxScene = 'daily';
+            var maxScore = 0;
+
+            for (var scene in sceneConfig) {
+                var score = 0;
+                sceneConfig[scene].keywords.forEach(function(kw) {
+                    if (lowerInput.indexOf(kw.toLowerCase()) !== -1) {
+                        score += 1;
+                    }
+                });
+                if (score > maxScore) {
+                    maxScore = score;
+                    maxScene = scene;
+                }
+            }
+
+            return { type: maxScene, config: sceneConfig[maxScene] };
+        }
+
+        function extractCorePhrase(input) {
+            var delimiters = ['，', '。', '！', '？', '、', '；'];
+            var phrases = [input];
+
+            delimiters.forEach(function(d) {
+                var newPhrases = [];
+                phrases.forEach(function(p) {
+                    if (p.indexOf(d) !== -1) {
+                        p.split(d).forEach(function(part) {
+                            if (part.trim()) newPhrases.push(part.trim());
+                        });
+                    } else {
+                        if (p.trim()) newPhrases.push(p.trim());
+                    }
+                });
+                phrases = newPhrases;
+            });
+
+            return phrases[0] || input;
+        }
+
+        // ==================== 逻辑A：改写式（完整输入）====================
+        function generateRewriteStyle(input, scene) {
+            var titles = [];
+            var fullInput = input.length > 18 ? input.substring(0, 18) + '...' : input;
+
+            titles.push({
+                style: '设定悬念',
+                title: '《' + randomPick(extremeSettings) + '：' + fullInput + '》'
+            });
+
+            var emotion = randomPick(['惊！', '谁懂啊？', '离谱！', '杀疯了！']);
+            var who = scene.type === 'workplace' ? '老板' : scene.type === 'school' ? '全班' : scene.type === 'love' ? '他' : '所有人';
+            titles.push({
+                style: '情绪冲击',
+                title: '《' + emotion + fullInput + '，' + who + randomPick(['跪了', '疯了', '炸了']) + '》'
+            });
+
+            return shuffle(titles).slice(0, 2);
+        }
+
+        // ==================== 逻辑B：截断拼接式 ====================
+        function generateCutStyle(input, scene) {
+            var titles = [];
+            var corePhrase = extractCorePhrase(input);
+            var safeLength = Math.min(corePhrase.length, 10);
+
+            var weakIdentity = scene.type === 'workplace' ? '卑微社畜' : scene.type === 'school' ? '普通学生' : '普通人';
+            titles.push({
+                style: '身份反差',
+                title: '《' + weakIdentity + corePhrase.substring(0, safeLength) + '，结果' + randomPick(['成了大佬', '逆袭了', '封神了']) + '》'
+            });
+
+            var group = scene.type === 'workplace' ? '全公司' : scene.type === 'school' ? '全校' : '全网';
+            titles.push({
+                style: '爽点堆叠',
+                title: '《' + corePhrase.substring(0, safeLength) + '，' + group + randomPick(['跪了', '疯了', '炸了']) + '》'
+            });
+
+            if (scene.type === 'love' || corePhrase.indexOf('暗恋') !== -1 || corePhrase.indexOf('表白') !== -1 || corePhrase.indexOf('前任') !== -1) {
+                titles.push({
+                    style: '狗血恋爱',
+                    title: '《' + corePhrase.substring(0, safeLength) + '，他' + randomPick(['追疯了', '后悔了', '跪求复合']) + '》'
+                });
+            }
+
+            titles.push({
+                style: '极限设定',
+                title: '《' + corePhrase.substring(0, safeLength) + '，地点竟在' + randomPick(['规则怪谈', '末日副本', '修仙界', '星际战场']) + '》'
+            });
+
+            return shuffle(titles).slice(0, 2);
+        }
+
+        // ==================== 逻辑C：简单模板式 ====================
+        function generateSimpleStyle(input, scene) {
+            var titles = [];
+            var corePhrase = extractCorePhrase(input);
+
+            var simpleTemplates = [
+                '《穿越后{event}，我摆烂了》',
+                '《重生后{event}，我只想搞钱》',
+                '《谁懂啊？{event}后，他追疯了》',
+                '《惊！{event}后，我封神了》',
+                '《绑定系统后{event}，我躺赢了》',
+                '《{event}后，全网都跪了》',
+                '《{event}后，剧情全崩了》',
+                '《{event}后，他后悔了》',
+                '《本只想{event}，结果成了大佬》',
+                '《因为{event}，我被全网黑后逆袭了》',
+                '《自从{event}，我的人生开挂了》',
+                '《当我开始{event}，他急了》'
+            ];
+
+            var selectedTemplates = shuffle(simpleTemplates).slice(0, 3);
+
+            selectedTemplates.forEach(function(template) {
+                var title = template.replace('{event}', corePhrase.substring(0, Math.min(corePhrase.length, 8)));
+                titles.push({ style: '经典模板', title: title });
+            });
+
+            return titles.slice(0, 2);
+        }
+
+        // ==================== 逻辑D：荒谬反转式 ====================
+        function generateAbsurdStyle(input, scene) {
+            var titles = [];
+            var corePhrase = extractCorePhrase(input);
+            var shortPhrase = corePhrase.substring(0, Math.min(corePhrase.length, 6));
+
+            // 极度荒谬的模板
+            var absurdTemplates = [
+                '《关于我{event}这件事，震惊了全宇宙》',
+                '《开局{event}，我竟成了救世主》',
+                '《{event}后，我被列入了世界遗产》',
+                '《震惊！{event}竟引发了时空悖论》',
+                '《{event}后，联合国给我发了感谢信》',
+                '《本想{event}，却不小心统一了银河系》',
+                '《{event}后，我获得了诺贝尔尴尬奖》',
+                '《{event}后，我被迫接受了全人类的膜拜》',
+                '《因为{event}，我被写进了教科书》',
+                '《{event}后，外星人来地球找我签名了》'
+            ];
+
+            var selected = shuffle(absurdTemplates).slice(0, 3);
+
+            selected.forEach(function(template) {
+                var title = template.replace('{event}', shortPhrase);
+                titles.push({ style: '荒谬反转', title: title });
+            });
+
+            return titles.slice(0, 2);
+        }
+
+        // ==================== 逻辑E：史诗叙事式 ====================
+        function generateEpicStyle(input, scene) {
+            var titles = [];
+            var corePhrase = extractCorePhrase(input);
+            var shortPhrase = corePhrase.substring(0, Math.min(corePhrase.length, 6));
+
+            var epicTemplates = [
+                '《{event}：一个普通人的史诗》',
+                '《命运的转折：{event}》',
+                '《{event}之后，世界再无宁日》',
+                '《那一天，人类终于想起了{event}的恐惧》',
+                '《{event}纪元：新世界的开端》',
+                '《预言中的{event}，终于降临》',
+                '《{event}：改变历史的那个瞬间》',
+                '《没有人能在{event}中全身而退》'
+            ];
+
+            var selected = shuffle(epicTemplates).slice(0, 2);
+
+            selected.forEach(function(template) {
+                var title = template.replace('{event}', shortPhrase);
+                titles.push({ style: '史诗叙事', title: title });
+            });
+
+            return titles.slice(0, 1);
+        }
+
+        // ==================== 主生成函数 ====================
+        function generateTitles(input) {
+            var titles = [];
+
+            // 1. 检查学习库
+            for (var i = 0; i < learnedPatterns.length; i++) {
+                var p = learnedPatterns[i];
+                if (input.indexOf(p.original.substring(0, 6)) !== -1 || p.original.indexOf(input.substring(0, 6)) !== -1) {
+                    titles.push({ style: '你的风格', title: p.transformed });
+                }
+            }
+
+            // 2. 场景识别
+            var scene = detectScene(input);
+
+            // 3. 五种逻辑各生成若干个
+            var rewriteTitles = generateRewriteStyle(input, scene);
+            var cutTitles = generateCutStyle(input, scene);
+            var simpleTitles = generateSimpleStyle(input, scene);
+            var absurdTitles = generateAbsurdStyle(input, scene);
+            var epicTitles = generateEpicStyle(input, scene);
+
+            titles = titles.concat(rewriteTitles).concat(cutTitles).concat(simpleTitles).concat(absurdTitles).concat(epicTitles);
+
+            // 去重
+            var seen = {};
+            var uniqueTitles = [];
+            shuffle(titles).forEach(function(t) {
+                if (!seen[t.title]) {
+                    seen[t.title] = true;
+                    uniqueTitles.push(t);
+                }
+            });
+
+            return uniqueTitles.slice(0, 5);
+        }
+
+        // ==================== 标签切换 ====================
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+
+            if (tabName === 'daily') {
+                document.getElementById('tabDaily').classList.add('active');
+                document.getElementById('panelDaily').classList.add('active');
+            } else {
+                document.getElementById('tabRandom').classList.add('active');
+                document.getElementById('panelRandom').classList.add('active');
+            }
+        }
+
+        // ==================== 偏好面板展开/收起 ====================
+        function togglePreference() {
+            var toggle = document.getElementById('preferenceToggle');
+            var content = document.getElementById('preferenceContent');
+            toggle.classList.toggle('expanded');
+            content.classList.toggle('show');
+        }
+
+        // ==================== 显示标题 ====================
+        function displayGeneratedTitles(titles) {
+            var container = document.getElementById('generatedTitles');
+            container.innerHTML = '';
+
+            if (titles.length === 0) {
+                container.innerHTML = '<div style="text-align:center;color:var(--fg-dim);padding:32px;">没有生成结果，请尝试其他内容</div>';
+                return;
+            }
+
+            var recommendedIndex = Math.floor(Math.random() * Math.min(2, titles.length));
+
+            titles.forEach(function(item, index) {
+                var isRecommended = index === recommendedIndex;
+                var div = document.createElement('div');
+                div.className = 'generated-title-item' + (isRecommended ? ' recommended' : '');
+
+                var highlightedTitle = item.title.replace(/(重生|穿越|系统|反派|攻略|心尖宠|白月光|死对头|团宠|封神|离谱|惊|杀疯了|跪了|疯了|竟是我|封神了|追疯了|甜炸了|顶流|大佬|末日|修仙|宇宙|银河|史诗|世界遗产|诺贝尔|联合国|外星人)/g, '<span class="highlight">$1</span>');
+
+                div.innerHTML =
+                    (isRecommended ? '<div class="recommended-badge">AI最推荐</div>' : '') +
+                    '<div class="style-tag">' + item.style + '</div>' +
+                    '<div class="title-text">' + highlightedTitle + '</div>' +
+                    '<div class="actions">' +
+                        '<span class="action-icon like" data-title="' + item.title + '" title="喜欢">👍</span>' +
+                        '<span class="action-icon dislike" data-title="' + item.title + '" title="不喜欢">👎</span>' +
+                        '<span class="action-icon copy-btn" data-title="' + item.title + '" title="复制">📋</span>' +
+                    '</div>';
+
+                container.appendChild(div);
+            });
+
+            bindTitleEvents();
+        }
+
+        function bindTitleEvents() {
+            document.querySelectorAll('.like').forEach(function(btn) {
+                btn.onclick = function(e) {
+                    e.stopPropagation();
+                    recordPreference(this.getAttribute('data-title'), true);
+                    showToast('已记录：喜欢 · 标题已加入随机库存');
+                };
+            });
+
+            document.querySelectorAll('.dislike').forEach(function(btn) {
+                btn.onclick = function(e) {
+                    e.stopPropagation();
+                    recordPreference(this.getAttribute('data-title'), false);
+                    showToast('已记录：不喜欢');
+                };
+            });
+
+            document.querySelectorAll('.copy-btn').forEach(function(btn) {
+                btn.onclick = function(e) {
+                    e.stopPropagation();
+                    copyText(this.getAttribute('data-title'));
+                };
+            });
+
+            document.querySelectorAll('.generated-title-item').forEach(function(item) {
+                item.onclick = function(e) {
+                    if (!e.target.classList.contains('action-icon')) {
+                        var titleText = this.querySelector('.title-text').textContent;
+                        copyText(titleText);
+                    }
+                };
+            });
+        }
+
+        // ==================== 偏好学习（点赞流入库存）====================
+        function recordPreference(title, isLike) {
+            if (isLike) {
+                preferences.likes.push({ title: title, time: getCurrentTime() });
+                // 点赞的标题流入随机库存
+                if (randomTitles.indexOf(title) === -1) {
+                    randomTitles.push(title);
+                }
+            } else {
+                preferences.dislikes.push({ title: title, time: getCurrentTime() });
+            }
+
+            try {
+                localStorage.setItem('preferences', JSON.stringify(preferences));
+                localStorage.setItem('randomTitles', JSON.stringify(randomTitles));
+            } catch (e) {}
+            updatePreferenceStats();
+            analyzePreferences();
+        }
+
+        function analyzePreferences() {
+            var analysis = document.getElementById('preferenceAnalysis');
+            var analysisText = document.getElementById('analysisText');
+            var tagsContainer = document.getElementById('preferenceTags');
+
+            if (preferences.likes.length < 1) {
+                analysisText.innerHTML = '点赞后会显示你的偏好分析';
+                tagsContainer.innerHTML = '';
+                return;
+            }
+
+            var keywordCounts = {};
+            var allKeywords = ['重生', '穿越', '系统', '反派', '白月光', '团宠', '甜', '虐', '爽', '狗血', '复仇', '跪', '疯', '竟是我', '封神', '顶流', '大佬', '末日', '修仙', '宇宙', '银河', '史诗'];
+
+            preferences.likes.forEach(function(p) {
+                allKeywords.forEach(function(kw) {
+                    if (p.title.indexOf(kw) !== -1) {
+                        keywordCounts[kw] = (keywordCounts[kw] || 0) + 1;
+                    }
+                });
+            });
+
+            var topKeywords = [];
+            for (var kw in keywordCounts) {
+                topKeywords.push({ kw: kw, count: keywordCounts[kw] });
+            }
+            topKeywords.sort(function(a, b) { return b.count - a.count; });
+
+            analysisText.innerHTML = '已记录 <strong>' + preferences.likes.length + '</strong> 个喜欢的标题';
+
+            tagsContainer.innerHTML = '';
+            topKeywords.slice(0, 5).forEach(function(item) {
+                var tag = document.createElement('span');
+                tag.className = 'preference-tag';
+                tag.textContent = item.kw + ' ×' + item.count;
+                tagsContainer.appendChild(tag);
+            });
+        }
+
+        function updatePreferenceStats() {
+            document.getElementById('likeCount').textContent = preferences.likes.length;
+            document.getElementById('dislikeCount').textContent = preferences.dislikes.length;
+            updateUserTitle();
+        }
+
+        // ==================== 上传标题 ====================
+        function uploadTitles() {
+            var textarea = document.getElementById('uploadTextarea');
+            var text = textarea.value.trim();
+
+            if (!text) {
+                showToast('请输入标题');
+                return;
+            }
+
+            // 按行分割
+            var lines = text.split('\n').map(function(line) {
+                return line.trim();
+            }).filter(function(line) {
+                return line.length > 0;
+            });
+
+            var addedCount = 0;
+            lines.forEach(function(line) {
+                // 确保有书名号
+                var title = line.indexOf('《') === -1 ? '《' + line + '》' : line;
+                if (randomTitles.indexOf(title) === -1) {
+                    randomTitles.push(title);
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                uploadedCount += addedCount;
+                try {
+                    localStorage.setItem('randomTitles', JSON.stringify(randomTitles));
+                    localStorage.setItem('uploadedCount', uploadedCount);
+                } catch (e) {}
+                updatePreferenceStats();
+                textarea.value = '';
+                showToast('已上传 ' + addedCount + ' 个标题 · 贡献值 +' + addedCount);
+            } else {
+                showToast('这些标题已在库存中');
+            }
+        }
+
+        // ==================== 生成入口 ====================
+        function generateFromDaily() {
+            var input = document.getElementById('dailyInput').value.trim();
+            if (!input) { showToast('请先输入内容'); return; }
+
+            var titles = generateTitles(input);
+            displayGeneratedTitles(titles);
+        }
+
+        // ==================== 反馈学习 ====================
+        function submitFeedback() {
+            var feedbackInput = document.getElementById('feedbackInput');
+            var userTitle = feedbackInput.value.trim();
+
+            if (!userTitle) { showToast('请输入你的标题'); return; }
+
+            var lastInput = document.getElementById('dailyInput').value.trim() || '日常内容';
+            var title = userTitle.indexOf('《') === -1 ? '《' + userTitle + '》' : userTitle;
+
+            learnedPatterns.push({ original: lastInput, transformed: title, time: getCurrentTime() });
+
+            // 也加入随机库存
+            if (randomTitles.indexOf(title) === -1) {
+                randomTitles.push(title);
+            }
+
+            try {
+                localStorage.setItem('learnedPatterns', JSON.stringify(learnedPatterns));
+                localStorage.setItem('randomTitles', JSON.stringify(randomTitles));
+            } catch (e) {}
+
+            document.getElementById('feedbackSuccess').classList.add('show');
+            feedbackInput.value = '';
+            updateLearnedDisplay();
+            updatePreferenceStats();
+
+            setTimeout(function() { document.getElementById('feedbackSuccess').classList.remove('show'); }, 3000);
+        }
+
+        function updateLearnedDisplay() {
+            var section = document.getElementById('learnedSection');
+            var count = document.getElementById('learnedCount');
+            var list = document.getElementById('learnedList');
+
+            if (learnedPatterns.length > 0) {
+                section.style.display = 'block';
+                count.textContent = learnedPatterns.length;
+
+                var recentPatterns = learnedPatterns.slice(-5).reverse();
+                var html = '';
+                recentPatterns.forEach(function(p) {
+                    html += '<div class="learned-item">' +
+                        '<span class="original">' + (p.original.length > 10 ? p.original.substring(0, 10) + '...' : p.original) + '</span>' +
+                        '<span class="arrow">→</span>' +
+                        '<span class="transformed">' + p.transformed + '</span>' +
+                    '</div>';
+                });
+                list.innerHTML = html;
+            }
+        }
+
+        // ==================== 随机生成 ====================
+        function generateRandom() {
+            currentTitle = randomPick(randomTitles);
+            updateTitleDisplay();
+            generateStats();
+        }
+
+        function updateTitleDisplay() {
+            var titleDisplay = document.getElementById('titleDisplay');
+            titleDisplay.innerHTML = currentTitle.replace(/(重生|穿越|系统|反派|攻略|心尖宠|白月光|死对头|豪门|团宠|封神|大佬|末日|修仙|宇宙|银河|史诗)/g, '<span class="highlight">$1</span>');
+        }
+
+        function generateStats() {
+            var words = (Math.floor(Math.random() * 450) + 50) + '万字';
+            var incomeRoll = Math.random();
+            var income, incomeClass, authorStatus, luckPercent, luckDesc;
+
+            if (incomeRoll < 0.4) {
+                income = '¥' + Math.floor(Math.random() * 500 + 50);
+                incomeClass = 'poor';
+                authorStatus = '作者状态：扑街中，全靠爱发电';
+                luckPercent = Math.floor(Math.random() * 20 + 5);
+                luckDesc = '继续加油，下一个大神就是你';
+            } else if (incomeRoll < 0.75) {
+                income = '¥' + (Math.floor(Math.random() * 50000) + 5000).toLocaleString();
+                incomeClass = '';
+                authorStatus = '作者状态：稳定更新中，勉强糊口';
+                luckPercent = Math.floor(Math.random() * 30 + 40);
+                luckDesc = '你已经超过一半的作者了';
+            } else if (incomeRoll < 0.92) {
+                income = '¥' + (Math.floor(Math.random() * 500000) + 100000).toLocaleString();
+                incomeClass = 'large';
+                authorStatus = '作者状态：小有名气的作者';
+                luckPercent = Math.floor(Math.random() * 7 + 70);
+                luckDesc = '厉害了，小有名气';
+            } else {
+                income = '¥' + (Math.floor(Math.random() * 5000000) + 1000000).toLocaleString();
+                incomeClass = 'good';
+                authorStatus = '作者状态：大神级，影视改编洽谈中';
+                luckPercent = Math.floor(Math.random() * 5 + 92);
+                luckDesc = '膜拜大神';
+            }
+
+            document.getElementById('statWords').textContent = words;
+            document.getElementById('statIncome').textContent = income;
+            document.getElementById('statIncome').className = 'stat-value ' + incomeClass;
+            document.getElementById('statUrgency').textContent = '每天' + (Math.random() * 5 + 1).toFixed(1) + '次';
+            document.getElementById('statAdapt').textContent = (Math.random() * 0.01).toFixed(4) + '%';
+            document.getElementById('authorStatus').textContent = authorStatus;
+            document.getElementById('luckPercent').textContent = luckPercent + '%';
+            document.getElementById('luckDesc').textContent = luckDesc;
+        }
+
+        // ==================== 复制功能 ====================
+        function copyText(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('已复制到剪贴板');
+                }).catch(function() {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        }
+
+        function fallbackCopy(text) {
+            var textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast('已复制到剪贴板');
+        }
+
+        // ==================== 初始化 ====================
+        function init() {
+            try {
+                var learned = localStorage.getItem('learnedPatterns');
+                if (learned) learnedPatterns = JSON.parse(learned);
+                var prefs = localStorage.getItem('preferences');
+                if (prefs) preferences = JSON.parse(prefs);
+                var savedTitles = localStorage.getItem('randomTitles');
+                if (savedTitles) {
+                    var parsed = JSON.parse(savedTitles);
+                    parsed.forEach(function(t) {
+                        if (randomTitles.indexOf(t) === -1) {
+                            randomTitles.push(t);
+                        }
+                    });
+                }
+                var savedUploadedCount = localStorage.getItem('uploadedCount');
+                if (savedUploadedCount) uploadedCount = parseInt(savedUploadedCount) || 0;
+            } catch (e) {
+                learnedPatterns = [];
+                preferences = { likes: [], dislikes: [] };
+                uploadedCount = 0;
+            }
+
+            document.getElementById('tabDaily').onclick = function() { switchTab('daily'); };
+            document.getElementById('tabRandom').onclick = function() { switchTab('random'); };
+
+            document.getElementById('preferenceToggle').onclick = togglePreference;
+
+            document.getElementById('btnGenerate').onclick = generateFromDaily;
+            document.getElementById('btnRandomGenerate').onclick = generateRandom;
+            document.getElementById('feedbackBtn').onclick = submitFeedback;
+            document.getElementById('uploadBtn').onclick = uploadTitles;
+
+            document.getElementById('btnCopy').onclick = function() { if (currentTitle) copyText(currentTitle); };
+            document.getElementById('titleDisplay').onclick = function() { if (currentTitle) copyText(currentTitle); };
+
+            generateRandom();
+            updateLearnedDisplay();
+            updatePreferenceStats();
+            analyzePreferences();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
